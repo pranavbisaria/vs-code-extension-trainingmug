@@ -22,6 +22,11 @@
         "command": "trainingmug.askQuestion",
         "category": "TrainingMug",
         "title": "Ask Question"
+      },
+      {
+        "command": "trainingmug.refresh",
+        "category": "TrainingMug",
+        "title": "Refresh"
       }
     ]
   },

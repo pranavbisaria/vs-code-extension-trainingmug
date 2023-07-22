@@ -10,6 +10,15 @@ export function activate(context: vscode.ExtensionContext) {
 		})
 	);
 	context.subscriptions.push(
+		vscode.commands.registerCommand('trainingmug.refresh', () => {;
+			Panel.kill();
+			Panel.createOrShow(context.extensionUri);
+			// setTimeout(() =>{
+			// 	vscode.commands.executeCommand("workbench.action.toggleDevTools");
+			// },500);
+		})
+	);
+	context.subscriptions.push(
 		vscode.commands.registerCommand("trainingmug.askQuestion", async () => {
 			const answer = await vscode.window.showInformationMessage('How was your day?', 'good', 'bad');
 
