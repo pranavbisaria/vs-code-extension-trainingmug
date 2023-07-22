@@ -12,6 +12,26 @@
   "activationEvents": [],
   "main": "./dist/extension.js",
   "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "vsinder-sidebar-view",
+          "title": "VSinder",
+          "icon": "media/heart.svg"
+        }
+      ]
+    },
+    "views": {
+      "vsinder-sidebar-view": [
+        {
+          "type": "webview",
+          "id": "vsinder-sidebar",
+          "name": "VSinder",
+          "icon": "media/heart.svg",
+          "contextualTitle": "VSinder"
+        }
+      ]
+    },
     "commands": [
       {
         "command": "trainingmug.main",
