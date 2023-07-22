@@ -15,20 +15,20 @@
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "vsinder-sidebar-view",
-          "title": "VSinder",
-          "icon": "media/heart.svg"
+          "id": "trainingmug-sidebar-view",
+          "title": "TrainingMug",
+          "icon": "media/trainingmug.svg"
         }
       ]
     },
     "views": {
-      "vsinder-sidebar-view": [
+      "trainingmug-sidebar-view": [
         {
           "type": "webview",
-          "id": "vsinder-sidebar",
-          "name": "VSinder",
-          "icon": "media/heart.svg",
-          "contextualTitle": "VSinder"
+          "id": "trainingmug-sidebar",
+          "name": "TrainingMug",
+          "icon": "media/trainingmug.svg",
+          "contextualTitle": "TrainingMug"
         }
       ]
     },

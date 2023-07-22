@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { Panel } from './Panel';
+import { SidebarProvider } from './SidebarProvider';
 
 export function activate(context: vscode.ExtensionContext) {
 
@@ -31,6 +32,13 @@ export function activate(context: vscode.ExtensionContext) {
 			}
 		})
 	);
+	const sidebarProvider = new SidebarProvider(context.extensionUri);
+	context.subscriptions.push(
+		vscode.window.registerWebviewViewProvider(
+		  "trainingmug-sidebar",
+		  sidebarProvider
+		)
+	  );
 }
 
 // This method is called when your extension is deactivated
