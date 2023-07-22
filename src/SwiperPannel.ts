@@ -124,9 +124,9 @@ export class SwiperPanel {
 
     private _getHtmlForWebview(webview: vscode.Webview) {
         // // And the uri we use to load this script in the webview
-        // const scriptUri = webview.asWebviewUri(
-        //   vscode.Uri.joinPath(this._extensionUri, "out", "compiled/swiper.js")
-        // );
+        const scriptUri = webview.asWebviewUri(
+          vscode.Uri.joinPath(this._extensionUri, "out/compiled", "HelloWorld.js")
+        );
 
         // Local path to css styles
         const styleResetPath = vscode.Uri.joinPath(
@@ -158,12 +158,8 @@ export class SwiperPanel {
                 <script nonce="${nonce}"></script>
 			</head>
             <body>
-            <h1>Welcome to TrainingMug</h1>
-            <hr>
-            <p>Use README.md for project requirements</p>
-            <input />
-            <button>Click</button>
 			</body>
+            <script src="${scriptUri}" nonce="${nonce}" />
 			</html>`;
     }
 }
