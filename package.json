@@ -17,7 +17,7 @@
         {
           "id": "trainingmug-sidebar-view",
           "title": "TrainingMug",
-          "icon": "media/trainingmug.svg"
+          "icon": "media/icon.svg"
         }
       ]
     },
@@ -27,7 +27,7 @@
           "type": "webview",
           "id": "trainingmug-sidebar",
           "name": "TrainingMug",
-          "icon": "media/trainingmug.svg",
+          "icon": "media/icon.svg",
           "contextualTitle": "TrainingMug"
         }
       ]
@@ -68,12 +68,15 @@
     "@tsconfig/svelte": "^5.0.0",
     "@types/glob": "^8.1.0",
     "@types/mocha": "^10.0.1",
-    "@types/node": "20.2.5",
+    "@types/node": "^20.4.4",
     "@types/vscode": "^1.80.0",
     "@typescript-eslint/eslint-plugin": "^5.59.8",
     "@typescript-eslint/parser": "^5.59.8",
     "@vscode/test-electron": "^2.3.2",
+    "axios": "^1.4.0",
+    "child_process": "^1.0.2",
     "concurrently": "^8.2.0",
+    "dotenv": "^16.3.1",
     "eslint": "^8.41.0",
     "glob": "^8.1.0",
     "mocha": "^10.2.0",

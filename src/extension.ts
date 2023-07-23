@@ -14,9 +14,6 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.commands.registerCommand('trainingmug.refresh', () => {;
 			Panel.kill();
 			Panel.createOrShow(context.extensionUri);
-			// setTimeout(() =>{
-			// 	vscode.commands.executeCommand("workbench.action.toggleDevTools");
-			// },500);
 		})
 	);
 	context.subscriptions.push(

@@ -26,5 +26,33 @@ ul {
 
 img {
 	max-width: 100%;
+    margin: 30px auto;
+    display: block;
 	height: auto;
+}
+
+.imgBlock{
+	padding: 25px 0;
+}
+
+.submit-button{
+	background-color: #4caf50;
+	color: white;
+}
+
+.stop-button {
+	background-color: #f44336;
+	color: white;
+}
+
+.test-button:hover {
+	background-color: #1e88e5;
+}
+  
+.stop-button:hover {
+	background-color: #d32f2f;
+}
+
+.submit-button:hover {
+	background-color: #438646;
 }

@@ -36,6 +36,28 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
           vscode.window.showErrorMessage(data.value);
           break;
         }
+        case "executeGitCommit": {
+          const terminal = vscode.window.createTerminal({
+            name: "Trainingmug Review",
+          });
+          terminal.sendText(data.value);
+          vscode.commands.executeCommand(
+            "code-runner.run"
+          );
+          break;
+        }
+        case "stop": {
+          vscode.commands.executeCommand(
+            "code-runner.stop"
+          );
+          break;
+        }
+        case "run": {
+          vscode.commands.executeCommand(
+            "code-runner.run"
+          );
+          break;
+        }
       }
     });
   }
@@ -48,33 +70,44 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     const styleResetUri = webview.asWebviewUri(
       vscode.Uri.joinPath(this._extensionUri, "media", "reset.css")
     );
+    const mainScriptUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._extensionUri, "media", "main.js")
+    );
     const styleVSCodeUri = webview.asWebviewUri(
       vscode.Uri.joinPath(this._extensionUri, "media", "vscode.css")
     );
-    const scriptUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, "out", "compiled/sidebar.js")
+    const scriptGenUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._extensionUri, "out", "compiled/Sidebar.js")
     );
-    const styleMainUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, "out", "compiled/sidebar.css")
+    const cssGenUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._extensionUri, "out", "compiled/Sidebar.css")
     );
+    const imageLogo = webview.asWebviewUri(
+        vscode.Uri.joinPath(this._extensionUri, "media", "trainingmug.svg")
+      );
 
-    // Use a nonce to only allow a specific script to be run.
     const nonce = getNonce();
 
     return `<!DOCTYPE html>
 			<html lang="en">
                 <head>
-                    <meta charset="UTF-8">
-                    <meta http-equiv="Content-Security-Policy" content="img-src https: data:; style-src 'unsafe-inline' ${webview.cspSource}; script-src 'nonce-${nonce}';">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <link href="${styleResetUri}" rel="stylesheet">
-                    <link href="${styleVSCodeUri}" rel="stylesheet">
-                    <link href="${styleMainUri}" rel="stylesheet">
-                    <script nonce="${nonce}"></script>
+                  <meta charset="UTF-8">
+                  <meta http-equiv="Content-Security-Policy" content="img-src https: data:; style-src 'unsafe-inline' ${webview.cspSource}; script-src 'nonce-${nonce}';">
+                  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                  <link href="${styleResetUri}" rel="stylesheet">
+                  <link href="${styleVSCodeUri}" rel="stylesheet">
+                  <link href="${cssGenUri}" rel="stylesheet">
+                  <script nonce="${nonce}">
+                    const tsvscode = acquireVsCodeApi();
+                    const trainingmuglogo = imageLogo;
+                  </script>
                 </head>
                 <body>
+                  <div class="imgBlock">
+                      <img id="logo" src="${imageLogo}" alt="image">
+                  <div>
                 </body>
-                <script nonce="${nonce}" src="${scriptUri}"></script>
+                <script nonce="${nonce}" src="${scriptGenUri}"></script>
 			</html>`;
   }
 }
