@@ -56,3 +56,25 @@ img {
 .submit-button:hover {
 	background-color: #438646;
 }
+
+#tableContainer {
+	height: 350px;
+	overflow-y: auto; /* This enables the vertical scroll when content exceeds the height */
+	border: 2px solid rgba(255, 255, 255, 0.492);
+	margin: 10px 0;
+}
+
+table {
+	width: 100%;
+}
+  
+th,
+td {
+	padding: 5px;
+	border: 1px solid #cccccc1f;
+}
+  
+th {
+	background-color: #eeeeee31;
+	font-weight: bold;
+}

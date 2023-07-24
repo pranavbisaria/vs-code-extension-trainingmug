@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import { getNonce } from "./Nonce";
 import { Panel } from "./Panel";
+import { resolve } from "path";
 
 export class SidebarProvider implements vscode.WebviewViewProvider {
   _view?: vscode.WebviewView;
@@ -37,13 +38,41 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
           break;
         }
         case "executeGitCommit": {
-          const terminal = vscode.window.createTerminal({
-            name: "Trainingmug Review",
-          });
-          terminal.sendText(data.value);
-          vscode.commands.executeCommand(
-            "code-runner.run"
-          );
+            const answer = await vscode.window.showInformationMessage('Are you sure, you want to submit?', 'Submit', 'Discard');
+      
+            if(answer === 'Submit'){
+              const terminal = vscode.window.createTerminal({
+                name: "Trainingmug Review",
+              });
+            
+              const onDataPromise = new Promise<void>((resolve) => {
+                vscode.window.onDidChangeTerminalState((terminal) => {
+                  if (terminal.name === "Trainingmug Review") {
+                    setTimeout(() =>{
+                    resolve();
+                  },3000);
+                  }
+                });
+              });
+              
+              terminal.sendText("cd .. && git add . && git commit -m 'Code Submission' && git push --force origin main && cd trainingmug");
+              
+              try {
+                await onDataPromise;
+                vscode.window.showInformationMessage(
+                  "Execution finished"
+                );
+              } catch (error) {
+                vscode.window.showErrorMessage(
+                  "Error executing the shell script: " + error
+                );
+              } finally {
+                terminal.dispose();
+              }
+              vscode.commands.executeCommand(
+                "code-runner.run"
+              );
+            }
           break;
         }
         case "stop": {

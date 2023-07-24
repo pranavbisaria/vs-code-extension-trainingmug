@@ -1,35 +1,50 @@
 <script lang="ts">
+  import { onMount } from "svelte";
+  import { outputStore } from './store';
+
+  let statuses: Array<{head: string, body: any}> = [];
+
+  // onMount(()=> {
+  //   window.addEventListener('message', event =>{
+  //     const message = event.data;
+  //     console.log("from svelte:  "+message);
+  //     switch (message.type){
+  //       case 'update-sidebar':
+  //       for (const [key, value] of Object.entries(message.value)) {
+  //         statuses = [{head: key, body: value}, ...statuses];
+  //       }
+  //         break;
+  //     }
+  //   })
+  // })
+
+  onMount(()=> { 
+    window.addEventListener('message', event =>{ 
+      const message = event.data; console.log("from svelte: "+message); 
+      switch (message.type){ 
+        case 'update-sidebar': 
+        outputStore.update(current => { 
+          const newValues = []; 
+          for (const [key, value] of Object.entries(message.value)) { 
+            newValues.push({head: key, body: value}); 
+          } 
+          return [...newValues, ...current]; 
+        }); 
+        break; 
+      } 
+    }) 
+  });
+
+  outputStore.subscribe((value) => {
+		statuses = value;
+	});
 </script>
 
 <button on:click={() => {
-  console.log("Executing the script");
-  tsvscode.postMessage({
-    type: 'onInfo',
-    value: 'Executing Code Submission'
-  });
-
-  setTimeout(() =>{
-    try {
-      tsvscode.postMessage({
-        type: 'executeGitCommit',
-        value: "cd .. && git add . && git commit -m 'Code Submission' && git push --force origin main && cd trainingmug"
-      });
-    } catch (error) {
-        console.log(error);
-        tsvscode.postMessage({
-          type: 'onError',
-          value: 'Code is submission failed'
-        });
-    }
-	},500)
-  
-  setTimeout(() =>{
     tsvscode.postMessage({
-      type: 'onInfo',
-      value: 'Code is submitted for review'
+      type: 'executeGitCommit',
+      value: ""
     });
-	},3000);
-  console.log("Script is Executed");
   }} class="submit-button">Submit</button>
 
 <button on:click={() => {
@@ -61,3 +76,20 @@
     });
   }
 }} class="stop-button">Stop</button>
+<hr>
+
+<div id="tableContainer">
+  <table>
+    <tr>
+      <th>Head</th>
+      <th>Value</th>
+    </tr>
+
+  {#each statuses as status}
+    <tr>
+      <td>{status.head}</td>
+      <td>{status.body}</td>
+    </tr>
+    {/each}
+  </table>
+</div>

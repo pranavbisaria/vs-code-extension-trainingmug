@@ -1,8 +1,18 @@
 import * as vscode from 'vscode';
 import { Panel } from './Panel';
 import { SidebarProvider } from './SidebarProvider';
+import WebhookReceiver from './WebhookReceiver';
 
 export function activate(context: vscode.ExtensionContext) {
+	const sidebarProvider = new SidebarProvider(context.extensionUri);
+	const webhookReceiver = new WebhookReceiver(context, sidebarProvider);
+	
+	const item = vscode.window.createStatusBarItem(
+		vscode.StatusBarAlignment.Right
+	);
+	item.text = "$(file-code) Submit main";
+	item.command = "trainingmug.submit";
+	item.show();
 
 	console.log('Congratulations, your extension "trainingmug" is now active!');
 	context.subscriptions.push(
@@ -29,13 +39,12 @@ export function activate(context: vscode.ExtensionContext) {
 			}
 		})
 	);
-	const sidebarProvider = new SidebarProvider(context.extensionUri);
 	context.subscriptions.push(
 		vscode.window.registerWebviewViewProvider(
 		  "trainingmug-sidebar",
 		  sidebarProvider
 		)
-	  );
+	);
 }
 
 // This method is called when your extension is deactivated
