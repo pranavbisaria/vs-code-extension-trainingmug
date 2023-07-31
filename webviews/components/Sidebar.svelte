@@ -45,7 +45,7 @@
       type: 'executeGitCommit',
       value: ""
     });
-  }} class="submit-button">Submit</button>
+  }} class="submit-button">Commit For Review</button>
 
 <button on:click={() => {
   try {
