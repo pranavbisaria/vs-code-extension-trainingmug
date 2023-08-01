@@ -2,6 +2,8 @@ import { ExtensionContext } from 'vscode';
 import express from 'express';
 import bodyParser from 'body-parser';
 import { SidebarProvider } from './SidebarProvider';
+import cors from 'cors';
+
 
 export default class WebhookReceiver {
   server: any;
@@ -10,6 +12,7 @@ export default class WebhookReceiver {
   constructor(context: ExtensionContext, sidebarProvider: SidebarProvider) {
     const app = express();
     app.use(bodyParser.json());
+    app.use(cors());
     app.post('/webhook', (req, res) => {
       const data = req.body;
 
