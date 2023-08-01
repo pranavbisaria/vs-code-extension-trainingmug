@@ -25,7 +25,7 @@ ul {
 }
 
 img {
-	max-width: 100%;
+	max-width: 60%;
     margin: 30px auto;
     display: block;
 	height: auto;
@@ -35,46 +35,58 @@ img {
 	padding: 25px 0;
 }
 
-.submit-button{
+#submit-button{
 	background-color: #4caf50;
 	color: white;
 }
 
-.stop-button {
+#stop-button {
 	background-color: #f44336;
 	color: white;
 }
 
-.test-button:hover {
+#test-button:hover {
 	background-color: #1e88e5;
 }
   
-.stop-button:hover {
+#stop-button:hover {
 	background-color: #d32f2f;
 }
 
-.submit-button:hover {
+#submit-button:hover {
 	background-color: #438646;
 }
 
-#tableContainer {
-	height: 350px;
-	overflow-y: auto; /* This enables the vertical scroll when content exceeds the height */
-	border: 2px solid rgba(255, 255, 255, 0.492);
-	margin: 10px 0;
+.table-container {
+	max-height: 350px;
+	overflow-y: auto;
+	margin-top: 20px;
 }
 
-table {
+.grouped-table {
 	width: 100%;
+	border-collapse: collapse;
 }
-  
-th,
-td {
-	padding: 5px;
-	border: 1px solid #cccccc1f;
+
+thead {
+	margin: 5px 0;
+	background-color: #ffffff4e;
+	border: 1px solid #ccc;
+	border-bottom: 2px solid #ccc;
 }
-  
+
 th {
-	background-color: #eeeeee31;
 	font-weight: bold;
+	padding: 10px;
+	text-align: center;
+}
+
+td {
+	border: 1px solid #f2f2f223;
+	padding: 10px;
+	text-align: center;
+}
+
+tbody:nth-child(odd) tr {
+	background-color: #f2f2f20e;
 }

@@ -6,6 +6,7 @@ import { resolve } from "path";
 export class SidebarProvider implements vscode.WebviewViewProvider {
   _view?: vscode.WebviewView;
   _doc?: vscode.TextDocument;
+  private tableRows = "";
 
   constructor(private readonly _extensionUri: vscode.Uri) {}
 
@@ -19,7 +20,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
       localResourceRoots: [this._extensionUri],
     };
 
-    webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
+    webviewView.webview.html = this._getHtmlForWebview(webviewView.webview, {});
 
     webviewView.webview.onDidReceiveMessage(async (data) => {
       switch (data.type) {
@@ -95,26 +96,33 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     this._view = panel;
   }
 
-  private _getHtmlForWebview(webview: vscode.Webview) {
+  public updateSidebar(data: { [key: string]: any }) {
+    if (this._view) {
+      vscode.window.showInformationMessage(
+        "Response received from TrainingMug"
+      );
+      const html = this._getHtmlForWebview(this._view.webview, data);
+      this._view.webview.html = html;
+    }
+  }
+
+  private _getHtmlForWebview(webview: vscode.Webview, data: { [key: string]: any }) {
     const styleResetUri = webview.asWebviewUri(
       vscode.Uri.joinPath(this._extensionUri, "media", "reset.css")
-    );
-    const mainScriptUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, "media", "main.js")
     );
     const styleVSCodeUri = webview.asWebviewUri(
       vscode.Uri.joinPath(this._extensionUri, "media", "vscode.css")
     );
-    const scriptGenUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, "out", "compiled/Sidebar.js")
-    );
-    const cssGenUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, "out", "compiled/Sidebar.css")
-    );
     const imageLogo = webview.asWebviewUri(
-        vscode.Uri.joinPath(this._extensionUri, "media", "trainingmug.svg")
-      );
+      vscode.Uri.joinPath(this._extensionUri, "media", "trainingmug.svg")
+    );
 
+    if(data !== null && Object.keys(data).length > 0){
+      this.tableRows = '<tbody>' + Object.entries(data)
+      .map(([key, value]) => `<tr><td>${key}</td><td>${value}</td></tr>`)
+      .join('') + '</tbody>' + this.tableRows;
+    }
+    
     const nonce = getNonce();
 
     return `<!DOCTYPE html>
@@ -125,18 +133,60 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                   <meta name="viewport" content="width=device-width, initial-scale=1.0">
                   <link href="${styleResetUri}" rel="stylesheet">
                   <link href="${styleVSCodeUri}" rel="stylesheet">
-                  <link href="${cssGenUri}" rel="stylesheet">
-                  <script nonce="${nonce}">
-                    const tsvscode = acquireVsCodeApi();
-                    const trainingmuglogo = imageLogo;
-                  </script>
                 </head>
                 <body>
                   <div class="imgBlock">
-                      <img id="logo" src="${imageLogo}" alt="image">
-                  <div>
-                </body>
-                <script nonce="${nonce}" src="${scriptGenUri}"></script>
+                      <img id="logo" src="https://raw.githubusercontent.com/pranavbisaria/Webhook-Event/master/media/trainingmug.svg" alt="image">
+                  </div>
+                  <button id="submit-button">Commit For Review</button>
+                  <button id="test-button">Test</button>
+                  <button id="stop-button">Stop</button>
+                  <div class="table-container">
+                    <table class="grouped-table">
+                      <thead>
+                        <tr>
+                          <th>KEY</th>
+                          <th>VALUE</th>
+                        </tr>
+                      </thead>
+                      ${this.tableRows}
+                    </table>
+                  </div>
+                      </body>
+                      <script nonce="${nonce}">
+                      const tsvscode = acquireVsCodeApi();
+                  const submitButton = document.getElementById('submit-button');
+                  const runButton = document.getElementById('test-button');
+                  const stopButton = document.getElementById('stop-button');
+        
+                  submitButton.addEventListener('click', () => {
+                    tsvscode.postMessage({ type: 'executeGitCommit' });
+                  });
+        
+                  runButton.addEventListener('click', () => {
+                    try {
+                      tsvscode.postMessage({ type: 'run' });
+                    } catch (error) {
+                      console.log(error);
+                      tsvscode.postMessage({
+                        type: 'onError',
+                        value: error
+                      });
+                    }
+                  });
+        
+                  stopButton.addEventListener('click', () => {
+                    try {
+                      tsvscode.postMessage({ type: 'stop' });
+                    } catch (error) {
+                      console.log(error);
+                      tsvscode.postMessage({
+                        type: 'onError',
+                        value: error
+                      });
+                    }
+                  });
+                </script>
 			</html>`;
   }
 }

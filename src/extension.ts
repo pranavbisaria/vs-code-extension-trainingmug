@@ -5,7 +5,7 @@ import WebhookReceiver from './WebhookReceiver';
 
 export function activate(context: vscode.ExtensionContext) {
 	const sidebarProvider = new SidebarProvider(context.extensionUri);
-	const webhookReceiver = new WebhookReceiver(context, sidebarProvider);
+	new WebhookReceiver(context, sidebarProvider);
 	
 	const item = vscode.window.createStatusBarItem(
 		vscode.StatusBarAlignment.Right

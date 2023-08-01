@@ -13,13 +13,8 @@ export default class WebhookReceiver {
     app.post('/webhook', (req, res) => {
       const data = req.body;
 
-      // Update the sidebar html component.
-      sidebarProvider._view?.webview.postMessage({
-        type: 'update-sidebar',
-        value: data
-      });
+      sidebarProvider.updateSidebar(data);
 
-      // console.log(data);
       res.status(200).send('OK');
     });
 
