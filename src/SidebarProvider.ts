@@ -1,12 +1,15 @@
 import * as vscode from "vscode";
 import { getNonce } from "./Nonce";
 import { Panel } from "./Panel";
-import { resolve } from "path";
+
+const MAX_SUBMISSIONS = 10;
 
 export class SidebarProvider implements vscode.WebviewViewProvider {
   _view?: vscode.WebviewView;
   _doc?: vscode.TextDocument;
-  private tableRows = "";
+  private submissionArray: Submission[] = [];
+  private submissionIdCounter = 1;
+
 
   constructor(private readonly _extensionUri: vscode.Uri) {}
 
@@ -14,13 +17,12 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     this._view = webviewView;
 
     webviewView.webview.options = {
-      // Allow scripts in the webview
       enableScripts: true,
 
       localResourceRoots: [this._extensionUri],
     };
 
-    webviewView.webview.html = this._getHtmlForWebview(webviewView.webview, {});
+
 
     webviewView.webview.onDidReceiveMessage(async (data) => {
       switch (data.type) {
@@ -61,52 +63,77 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
               try {
                 await onDataPromise;
                 vscode.window.showInformationMessage(
-                  "Execution finished"
+                  "Please wait while test are executed..."
                 );
               } catch (error) {
                 vscode.window.showErrorMessage(
                   "Error executing the shell script: " + error
                 );
-              } finally {
-                terminal.dispose();
               }
               vscode.commands.executeCommand(
-                "code-runner.run"
+                "trainingmug.run"
               );
             }
           break;
         }
-        case "stop": {
+        case "test": {
           vscode.commands.executeCommand(
-            "code-runner.stop"
+            "trainingmug.test"
           );
           break;
         }
         case "run": {
           vscode.commands.executeCommand(
-            "code-runner.run"
+            "trainingmug.run"
           );
+          break;
+        }
+        case "openPanel": {
+          Panel.kill();
+          Panel.createOrShow(this._extensionUri, data.value);
+          break;
+        }
+        case "openSidebar": {
+          this._view?.show(true);
           break;
         }
       }
     });
+
+    const html = this._getHtmlForWebview(webviewView.webview, { submittedAt: "", testCases: [] });
+    webviewView.webview.html = html;
   }
 
   public revive(panel: vscode.WebviewView) {
     this._view = panel;
   }
 
-  public updateSidebar(data: { [key: string]: any }) {
+  public updateSidebar(data: SidebarData) {
     if (this._view) {
-      vscode.window.showInformationMessage(
-        "Response received from TrainingMug"
-      );
-      const html = this._getHtmlForWebview(this._view.webview, data);
+      vscode.window.showInformationMessage("Response received from TrainingMug");
+
+      const submissionId = this.submissionIdCounter++;
+      const submissionTitle = `Submission #${submissionId}`;
+
+      const submission: Submission = {
+        submissionId: submissionId.toString(),
+        submissionTitle: submissionTitle,
+        submittedAt: data.submittedAt,
+        testCases: data.testCases,
+      };
+
+      this.submissionArray.unshift(submission);
+
+      if (this.submissionArray.length > MAX_SUBMISSIONS) {
+        this.submissionArray.pop();
+      }
+
+      const html = this._getHtmlForWebview(this._view.webview, submission);
       this._view.webview.html = html;
     }
   }
 
-  private _getHtmlForWebview(webview: vscode.Webview, data: { [key: string]: any }) {
+  private _getHtmlForWebview(webview: vscode.Webview, data: SidebarData) {
     const styleResetUri = webview.asWebviewUri(
       vscode.Uri.joinPath(this._extensionUri, "media", "reset.css")
     );
@@ -116,77 +143,97 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     const imageLogo = webview.asWebviewUri(
       vscode.Uri.joinPath(this._extensionUri, "media", "trainingmug.svg")
     );
+    const myScript = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._extensionUri, "media", "script.js")
+    );
 
-    if(data !== null && Object.keys(data).length > 0){
-      this.tableRows = '<tbody>' + Object.entries(data)
-      .map(([key, value]) => `<tr><td>${key}</td><td>${value}</td></tr>`)
-      .join('') + '</tbody>' + this.tableRows;
-    }
-    
     const nonce = getNonce();
 
     return `<!DOCTYPE html>
-			<html lang="en">
-                <head>
-                  <meta charset="UTF-8">
-                  <meta http-equiv="Content-Security-Policy" content="img-src https: data:; style-src 'unsafe-inline' ${webview.cspSource}; script-src 'nonce-${nonce}';">
-                  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                  <link href="${styleResetUri}" rel="stylesheet">
-                  <link href="${styleVSCodeUri}" rel="stylesheet">
-                </head>
-                <body>
-                  <div class="imgBlock">
-                      <img id="logo" src="https://raw.githubusercontent.com/pranavbisaria/Webhook-Event/master/media/trainingmug.svg" alt="image">
-                  </div>
-                  <button id="submit-button">Commit For Review</button>
-                  <button id="test-button">Test</button>
-                  <button id="stop-button">Stop</button>
-                  <div class="table-container">
-                    <table class="grouped-table">
-                      <thead>
-                        <tr>
-                          <th>KEY</th>
-                          <th>VALUE</th>
-                        </tr>
-                      </thead>
-                      ${this.tableRows}
-                    </table>
-                  </div>
-                      </body>
-                      <script nonce="${nonce}">
-                      const tsvscode = acquireVsCodeApi();
-                  const submitButton = document.getElementById('submit-button');
-                  const runButton = document.getElementById('test-button');
-                  const stopButton = document.getElementById('stop-button');
-        
-                  submitButton.addEventListener('click', () => {
-                    tsvscode.postMessage({ type: 'executeGitCommit' });
-                  });
-        
-                  runButton.addEventListener('click', () => {
-                    try {
-                      tsvscode.postMessage({ type: 'run' });
-                    } catch (error) {
-                      console.log(error);
-                      tsvscode.postMessage({
-                        type: 'onError',
-                        value: error
-                      });
-                    }
-                  });
-        
-                  stopButton.addEventListener('click', () => {
-                    try {
-                      tsvscode.postMessage({ type: 'stop' });
-                    } catch (error) {
-                      console.log(error);
-                      tsvscode.postMessage({
-                        type: 'onError',
-                        value: error
-                      });
-                    }
-                  });
+		        <html lang="en">
+              <head>
+                <meta charset="UTF-8">
+                <meta http-equiv="Content-Security-Policy" content="img-src https: data:; style-src 'unsafe-inline' ${webview.cspSource}; script-src 'nonce-${nonce}';">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <link href="${styleResetUri}" rel="stylesheet">
+                <link href="${styleVSCodeUri}" rel="stylesheet">
+                <script nonce="${nonce}">
+                  var submissions = ${JSON.stringify(this.submissionArray)};
                 </script>
-			</html>`;
-  }
+              </head>
+              <body>
+                <div class="imgBlock">
+                    <img id="logo" src="${imageLogo}" alt="image">
+                </div>
+                <div id="button-container">
+                  <button id="run-button">Run</button>
+                  <button id="test-button">Test</button>
+                  <button id="submit-button">Commit For Review</button>
+                </div>
+                <div class="popup">
+                  <div class="popup-content">
+                  </div>
+                </div>
+                <div class="main-container"></div>
+                </div>
+              </body>
+              <script nonce="${nonce}" src="${myScript}"></script>
+              <script nonce="${nonce}">
+                const tsvscode = acquireVsCodeApi();
+                const submitButton = document.getElementById('submit-button');
+                const testButton = document.getElementById('test-button');
+                const runButton = document.getElementById('run-button');
+
+                submitButton.addEventListener('click', () => {
+                  tsvscode.postMessage({ type: 'executeGitCommit' });
+                });
+
+                runButton.addEventListener('click', () => {
+                  try {
+                    tsvscode.postMessage({ type: 'run' });
+                  } catch (error) {
+                    console.log(error);
+                    tsvscode.postMessage({
+                      type: 'onError',
+                      value: error
+                    });
+                  }
+                });
+
+                testButton.addEventListener('click', () => {
+                  try {
+                    tsvscode.postMessage({ type: 'test' });
+                  } catch (error) {
+                    console.log(error);
+                    tsvscode.postMessage({
+                      type: 'onError',
+                      value: error
+                    });
+                  }
+                });
+              </script>
+			      </html>`;
+    }
+}
+
+interface TestCase {
+  caseTitle: string;
+  success: boolean;
+  more: {
+      input: number;
+      expectedOutput: number;
+      yourOutput: string;
+  };
+}
+
+interface Submission {
+  submissionId: string;
+  submissionTitle: string;
+  submittedAt: string;
+  testCases: TestCase[];
+}
+
+interface SidebarData {
+  submittedAt: string;
+  testCases: TestCase[];
 }

@@ -2,9 +2,13 @@ import * as vscode from "vscode";
 import { getNonce } from "./Nonce";
 
 export class Panel {
-  /**
-   * Track the currently panel. Only allow a single panel to exist at a time.
-   */
+  private static globalData: any = {
+    title: "PLease select a case",
+    inputData: "PLease select a case",
+    expectedOutput: "PLease select a case",
+    yourOutput: "PLease select a case",
+  };
+
   public static currentPanel: Panel | undefined;
 
   public static readonly viewType = "Panel";
@@ -13,31 +17,38 @@ export class Panel {
   private readonly _extensionUri: vscode.Uri;
   private _disposables: vscode.Disposable[] = [];
 
-  public static createOrShow(extensionUri: vscode.Uri) {
+  public static createOrShow(extensionUri: vscode.Uri, data: any) {
+
+    if (data) {
+      Panel.globalData.title = data.title;
+      Panel.globalData.inputData = data.more.input;
+      Panel.globalData.expectedOutput = data.more.expectedOutput;
+      Panel.globalData.yourOutput = data.more.yourOutput;
+    }
+
     const column = vscode.window.activeTextEditor
       ? vscode.window.activeTextEditor.viewColumn
       : undefined;
 
-    // If we already have a panel, show it.
     if (Panel.currentPanel) {
       Panel.currentPanel._panel.reveal(column);
       Panel.currentPanel._update();
       return;
     }
-
+    
     const panel = vscode.window.createWebviewPanel(
       Panel.viewType,
-      "TrainingMug",
+      "TrainingMug - " + Panel.globalData.title,
       column || vscode.ViewColumn.One,
       {
         enableScripts: true,
-
+        
         localResourceRoots: [
-          vscode.Uri.joinPath(extensionUri, "media"),
-          vscode.Uri.joinPath(extensionUri, "out/compiled"),
-        ],
+          vscode.Uri.joinPath(extensionUri, "media")
+        ]
       }
     );
+
 
     Panel.currentPanel = new Panel(panel, extensionUri);
   }
@@ -56,12 +67,13 @@ export class Panel {
     this._extensionUri = extensionUri;
     this._update();
     this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
+    this._panel.iconPath = vscode.Uri.joinPath(extensionUri, "media", "icon.svg");
+
   }
 
   public dispose() {
     Panel.currentPanel = undefined;
 
-    // Clean up our resources
     this._panel.dispose();
 
     while (this._disposables.length) {
@@ -92,20 +104,14 @@ export class Panel {
           vscode.window.showErrorMessage(data.value);
           break;
         }
-        // case "tokens": {
-        //   await Util.globalState.update(accessTokenKey, data.accessToken);
-        //   await Util.globalState.update(refreshTokenKey, data.refreshToken);
-        //   break;
-        // }
+        case "closePanel": {
+          Panel.kill();
+        }
       }
     });
   }
 
   private _getHtmlForWebview(webview: vscode.Webview) {
-    const scriptUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, "out/compiled", "Main.js")
-    );
-
     const stylesResetUri = webview.asWebviewUri(
       vscode.Uri.joinPath(this._extensionUri, "media", "reset.css")
     );
@@ -123,12 +129,83 @@ export class Panel {
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link href="${stylesResetUri}" rel="stylesheet">
         <link href="${stylesMainUri}" rel="stylesheet">
-        <script nonce="${nonce}">
-        </script>
+        <style>
+            body{
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+            }
+            .caseTitle{
+              margin-bottom: 20px;
+            }
+            .moreInfo {
+                width: 330px;
+                height: 70px;
+                padding: 25px;
+                border-radius: 10px;
+                margin: 10px auto;
+                background-color: #000000;
+                color: #FFFFFF;
+                overflow-y: scroll;
+            }
+            p{
+                font-size: 18px;
+                color: #FFFFFF;
+                text-align: center;
+            }
+
+            .mainMoreInfo {
+                width: 556px;
+                margin: 0px 25px;
+            }
+            .moreContainer {
+                width: 430px;
+                border-radius: 20px;
+                background-color: #161B22;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                padding: 20px 0px 10px;
+            }
+            button {
+                width: 120px;
+                height: 46px;
+                padding: 10px 20px;
+                border-radius: 10px;
+                margin: 10px auto;
+                color: #000000;
+                background: #FA7970;
+            }
+        </style>
 			</head>
       <body>
+      <div class="moreContainer">
+        <div class="caseTitle">${Panel.globalData.title}</div>
+        <div class="mainMoreInfo">
+          <p>Input</p>
+          <div class="moreInfo">${Panel.globalData.inputData}</div>
+        </div>
+        <div class="mainMoreInfo">
+          <p>Expected Output</p>
+          <div class="moreInfo">${Panel.globalData.expectedOutput}</div>
+        </div>
+        <div class="mainMoreInfo">
+          <p>Your Output</p>
+          <div class="moreInfo">${Panel.globalData.yourOutput}</div>
+        </div>
+        <button button id="close-button">Close</button>
+      </div>
 			</body>
-      <script src="${scriptUri}" nonce="${nonce}">
+      <script nonce="${nonce}">
+        const vscode = acquireVsCodeApi();
+        const closeButton = document.getElementById("close-button");
+        
+        closeButton.addEventListener("click", () => {
+          vscode.postMessage({ type: "closePanel" });
+        });
+      </script>
 			</html>`;
   }
 }

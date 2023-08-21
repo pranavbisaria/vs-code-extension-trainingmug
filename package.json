@@ -8,10 +8,11 @@
   "engines": {
     "vscode": "^1.80.0"
   },
-  "categories": [
-    "Other"
+  "icon": "media/logo.png",
+  "activationEvents": [
+    "onStartupFinished",
+    "onView:trainingmug-sidebar-view"
   ],
-  "activationEvents": [],
   "main": "./dist/extension.js",
   "contributes": {
     "viewsContainers": {
@@ -19,7 +20,7 @@
         {
           "id": "trainingmug-sidebar-view",
           "title": "TrainingMug",
-          "icon": "media/icon.svg"
+          "icon": "./media/icon.svg"
         }
       ]
     },
@@ -29,26 +30,37 @@
           "type": "webview",
           "id": "trainingmug-sidebar",
           "name": "TrainingMug",
-          "icon": "media/icon.svg",
+          "icon": "./media/icon.svg",
           "contextualTitle": "TrainingMug"
         }
       ]
     },
     "commands": [
       {
-        "command": "trainingmug.main",
+        "command": "trainingmug.run",
+        "title": "TrainingMug Run",
+        "icon": {
+          "light": "./media/icon.svg",
+          "dark": "./media/icon.svg"
+        }
+      },
+      {
+        "command": "trainingmug.test",
+        "title": "TrainingMug Test",
         "category": "TrainingMug",
-        "title": "Main"
+        "icon": "$(debug-stop)"
       },
       {
         "command": "trainingmug.askQuestion",
         "category": "TrainingMug",
         "title": "Ask Question"
-      },
+      }
+    ],
+    "keybindings": [
       {
-        "command": "trainingmug.refresh",
-        "category": "TrainingMug",
-        "title": "Refresh"
+        "command": "trainingmug.show",
+        "key": "Ctrl+t",
+        "mac": "Cmd+t"
       }
     ]
   },
