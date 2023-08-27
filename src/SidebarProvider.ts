@@ -58,7 +58,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                 });
               });
               
-              terminal.sendText("cd .. && git add . && git commit -m 'Code Submission' && git push --force origin main && cd trainingmug");
+              terminal.sendText('cd .. && IPADDRESS=$(curl -s https://api.ipify.org) && sed "s|IPADDRESS=.*$|IPADDRESS=${IPADDRESS}|" .gitlab-ci.yml > .gitlab-ci.yml.tmp && mv .gitlab-ci.yml.tmp .gitlab-ci.yml && rm -f .gitlab-ci.yml.tmp && git add . && git commit -m "Code Submission" && git push --force origin main && cd trainingmug && echo "Submission Successfull..."');
               
               try {
                 await onDataPromise;
@@ -70,9 +70,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                   "Error executing the shell script: " + error
                 );
               }
-              vscode.commands.executeCommand(
-                "trainingmug.run"
-              );
+              vscode.commands.executeCommand('workbench.view.extension.trainingmug-sidebar-view');
             }
           break;
         }
