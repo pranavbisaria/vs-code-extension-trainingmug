@@ -38,17 +38,21 @@
     "commands": [
       {
         "command": "trainingmug.run",
-        "title": "TrainingMug Run",
-        "icon": {
-          "light": "./media/icon.svg",
-          "dark": "./media/icon.svg"
-        }
+        "title": "Run",
+        "category": "TrainingMug",
+        "icon": "$(play)"
       },
       {
         "command": "trainingmug.test",
-        "title": "TrainingMug Test",
+        "title": "Test",
         "category": "TrainingMug",
-        "icon": "$(debug-stop)"
+        "icon": "$(debug-alt-small)"
+      },
+      {
+        "command": "trainingmug.stop",
+        "title": "Stop",
+        "icon": "$(debug-stop)",
+        "tooltip": "Stop running"
       },
       {
         "command": "trainingmug.askQuestion",
@@ -58,11 +62,30 @@
     ],
     "keybindings": [
       {
-        "command": "trainingmug.show",
-        "key": "Ctrl+t",
-        "mac": "Cmd+t"
+        "command": "trainingmug.run",
+        "key": "ctrl+alt+t",
+        "mac": "cmd+alt+t"
       }
-    ]
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "trainingmug.run",
+          "group": "navigation@1",
+          "when": "true"
+        },
+        {
+          "command": "trainingmug.test",
+          "group": "navigation@3",
+          "when": "true"
+        },
+        {
+          "command": "trainingmug.stop",
+          "group": "navigation@2",
+          "when": "true"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run package",

@@ -4,7 +4,7 @@ import bodyParser from 'body-parser';
 import { SidebarProvider } from './SidebarProvider';
 import cors from 'cors';
 
-const SECRET_TOKEN = 'fdshfjksdhfjksdhfj';
+const SECRET_TOKEN = 'fdshfy7ygewh89f7y8wefh';
 
 export default class WebhookReceiver {
   server: any;

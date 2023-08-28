@@ -6,34 +6,33 @@ export function activate(context: vscode.ExtensionContext) {
 	const sidebarProvider = new SidebarProvider(context.extensionUri);
 	const webhook = new WebhookReceiver(context, sidebarProvider);
 
-	//Status Bar Button Run Button
-	const statusBarRunButton = vscode.window.createStatusBarItem(
-		vscode.StatusBarAlignment.Right,
-		-1000
-	);
-	statusBarRunButton.text = "$(play) Run Code";
-	statusBarRunButton.tooltip = "Click to Run";
-	statusBarRunButton.color = "white";
-	statusBarRunButton.command = "trainingmug.run";
-	statusBarRunButton.show();
+	// //Status Bar Button Run Button
+	// const statusBarRunButton = vscode.window.createStatusBarItem(
+	// 	vscode.StatusBarAlignment.Right,
+	// 	-1000
+	// );
+	// statusBarRunButton.text = "$(play) Run Code";
+	// statusBarRunButton.tooltip = "Click to Run";
+	// statusBarRunButton.color = "white";
+	// statusBarRunButton.command = "trainingmug.run";
+	// statusBarRunButton.show();
 
-	//Status Bar Button
-	const statusBarTestButton = vscode.window.createStatusBarItem(
-		vscode.StatusBarAlignment.Right,
-		-900
-	);
-	statusBarTestButton.text = "$(debug) Run Test";
-	statusBarTestButton.tooltip = "Click to Test";
-	statusBarTestButton.color = "white";
-	statusBarTestButton.command = "trainingmug.test";
-	statusBarTestButton.show();
+	// //Status Bar Button
+	// const statusBarTestButton = vscode.window.createStatusBarItem(
+	// 	vscode.StatusBarAlignment.Right,
+	// 	-900
+	// );
+	// statusBarTestButton.text = "$(debug) Run Test";
+	// statusBarTestButton.tooltip = "Click to Test";
+	// statusBarTestButton.color = "white";
+	// statusBarTestButton.command = "trainingmug.test";
+	// statusBarTestButton.show();
 
 
 	//Ask Question
 	context.subscriptions.push(
 		vscode.commands.registerCommand("trainingmug.askQuestion", async () => {
 			const answer = await vscode.window.showInformationMessage('How was your day?', 'good', 'bad');
-
 			if(answer === 'bad'){
 				vscode.window.showInformationMessage('Sorry to hear that!');
 			}
@@ -67,9 +66,18 @@ export function activate(context: vscode.ExtensionContext) {
 		
 			try {
 				const data = JSON.parse(contents.toString());
-				let terminal = vscode.window.activeTerminal;
+				let terminals = vscode.window.terminals;
+				let terminal;
+				let j=0;
+				while(j < terminals.length){
+					if(terminals[j].name === 'TrainingMug'){
+						terminal = terminals[j];
+						break;
+					}
+					j++;
+				}
 				if(!terminal){
-					terminal = vscode.window.createTerminal();
+					terminal = vscode.window.createTerminal({name: "TrainingMug"});
 				}
 				terminal.show();
 				terminal.sendText(data.run);
@@ -94,9 +102,18 @@ export function activate(context: vscode.ExtensionContext) {
 		
 			try {
 				const data = JSON.parse(contents.toString());
-				let terminal = vscode.window.activeTerminal;
+				let terminals = vscode.window.terminals;
+				let terminal;
+				let j=0;
+				while(j < terminals.length){
+					if(terminals[j].name === 'TrainingMug'){
+						terminal = terminals[j];
+						break;
+					}
+					j++;
+				}
 				if(!terminal){
-					terminal = vscode.window.createTerminal();
+					terminal = vscode.window.createTerminal({name: "TrainingMug"});
 				}
 				terminal.show();
 				terminal.sendText(data.test);
@@ -106,9 +123,17 @@ export function activate(context: vscode.ExtensionContext) {
 			})
 	);
 
+	//Test Command
 	context.subscriptions.push(
-		
+		vscode.commands.registerCommand('trainingmug.stop', () => {
+			vscode.window.terminals.forEach((terminal) => {
+				if(terminal.name === 'TrainingMug'){
+					terminal.sendText('\x03');
+				}
+			});
+		})
 	);
+
 
 	console.log('TrainingMug is now active!');
 }
